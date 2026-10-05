@@ -63,6 +63,7 @@ public class CharacterGuiManager implements Listener {
         inv.setItem(15, item(Material.KNOWLEDGE_BOOK, "技能一覧", "カテゴリから技能を選択", "左クリック: 判定 / 右クリック: お気に入り"));
         inv.setItem(16, item(Material.AMETHYST_SHARD, "クイックスキル", "お気に入り技能を最大9個表示"));
         inv.setItem(18, item(Material.CRAFTING_TABLE, "探索者作成ウィザード", "新規作成・能力値・職業・技能ポイントを順番に設定"));
+        inv.setItem(19, item(Material.ENCHANTED_BOOK, "オリジナル技能", "作成・所持技能の確認", "KPは使用可否を管理できます"));
         inv.setItem(22, item(Material.WRITTEN_BOOK, "従来の本シート", "クリックで従来形式を開く"));
         p.openInventory(inv);
     }
@@ -129,7 +130,7 @@ public class CharacterGuiManager implements Listener {
         if(!(title.equals(SHEET)||title.equals(SKILLS)||title.equals(QUICK)||title.equals(STATS)||title.startsWith("§0技能: "))) return;
         e.setCancelled(true); ItemStack clicked=e.getCurrentItem(); if(clicked==null||!clicked.hasItemMeta()) return;
         if(title.equals(SHEET)) {
-            if(e.getSlot()==18) plugin.getCharacterCreationWizard().open(p); else if(e.getSlot()==14) openStats(p); else if(e.getSlot()==15) openCategories(p); else if(e.getSlot()==16) openQuick(p); else if(e.getSlot()==22){p.closeInventory(); plugin.getBookManager().openSheet(p);} return;
+            if(e.getSlot()==18) plugin.getCharacterCreationWizard().open(p); else if(e.getSlot()==19){ p.closeInventory(); plugin.getCustomSkillManager().openEditor(p); } else if(e.getSlot()==14) openStats(p); else if(e.getSlot()==15) openCategories(p); else if(e.getSlot()==16) openQuick(p); else if(e.getSlot()==22){p.closeInventory(); plugin.getBookManager().openSheet(p);} return;
         }
         if(title.equals(STATS)) {
             if(e.getSlot()==26){openSheet(p);return;}

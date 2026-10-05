@@ -1763,6 +1763,7 @@ public class Plugin extends JavaPlugin {
     public SkillCooldownManager getSkillCooldownManager() { return skillCooldownManager; }
     public SessionManager getSessionManager() { return sessionManager; }
     public KpToolManager getKpToolManager() { return kpToolManager; }
+    public DeathManager getDeathManager() { return deathManager; }
 
     public CustomSkillManager getCustomSkillManager() { return customSkillManager; }
 

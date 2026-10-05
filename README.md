@@ -490,3 +490,8 @@ KPは `/customskill kp` で全オリジナル技能を確認し、シナリオ�
 
 ### KP作成のシナリオ技能
 KPも通常のCustom Skill Editorと同じGUIからオリジナル技能を作成できます。KP TOOLの「オリジナル技能管理」または `/customskill kpcreate` を使用します。KP作成技能は `SCENARIO` として区別され、`/customskill give <player> <id> [value]` で任意の探索者へ付与できます。`/customskill kp` ではCUSTOM/SCENARIOをまとめて確認し、シナリオ中の使用許可/禁止を切り替えられます。SCENARIO技能はデフォルトでセッション限定となり、`/session end` 時に所有者割当を解除します。
+
+### Fix8: KP TOOL リバイブ / Custom Skill導線
+- KP TOOL → 「探索者管理 / リバイブ」からオンライン探索者を選択し、HPのみ / HP・SAN全回復をGUIで実行できます。
+- 探索者シートGUIに「オリジナル技能」を追加し、Custom Skill Editorへ直接移動できます。
+- `/customskill` は plugin.yml と Plugin.java の双方で登録されています。
