@@ -132,7 +132,7 @@ public class DamageManager implements Listener {
         }
 
         int before = characterManager.getCurrentHp(player);
-        int after = Math.max(0, before - damage);
+        int after = before - damage;
 
         characterManager.setCurrentHp(player, after);
         plugin.getDamageFeedbackManager().play(player, Math.max(0, before - after));

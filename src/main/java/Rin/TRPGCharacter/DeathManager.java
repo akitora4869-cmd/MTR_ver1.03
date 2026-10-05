@@ -49,9 +49,10 @@ public class DeathManager implements Listener {
             returnBook.put(player.getUniqueId(), true);
         }
 
-        // TRPG側は死亡状態として0を維持
+        // 死亡時HP（オーバーキルを含む）を維持し、遺体状態の判定に使う。
         if (characterManager.hasConfiguredStats(player)) {
-            characterManager.setCurrentHp(player, 0);
+            int deathHp = characterManager.getCurrentHp(player);
+            plugin.getCorpseManager().createPlayerCorpse(player, deathHp);
             plugin.getSidebarManager().updatePlayer(player);
         }
 

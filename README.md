@@ -495,3 +495,10 @@ KPも通常のCustom Skill Editorと同じGUIからオリジナル技能を作�
 - KP TOOL → 「探索者管理 / リバイブ」からオンライン探索者を選択し、HPのみ / HP・SAN全回復をGUIで実行できます。
 - 探索者シートGUIに「オリジナル技能」を追加し、Custom Skill Editorへ直接移動できます。
 - `/customskill` は plugin.yml と Plugin.java の双方で登録されています。
+
+## 遺体・血痕システム (Fix9)
+死亡時HPに応じて遺体の損傷状態を自動生成します。血痕は標準15分残存し、遺体はKP TOOLの「遺体・血痕管理」から確認・削除できます。詳細は `CORPSE_BLOOD_GUIDE.md` を参照してください。
+
+## Event Editor / EDITOR WAND (Fix10)
+
+Fix10ではEDITOR WANDをシナリオ制作の中心ツールへ拡張し、Event Editorの基盤を実装しました。Eventは `Trigger -> Condition -> Action` で構成し、AREA_ENTERエリアはWANDで2点を直接指定できます。Actionは上から順に実行され、WAITを挟んだタイムライン演出にも対応します。Editor ViewではKPだけにイベント範囲を可視化できます。詳細は `EVENT_EDITOR_GUIDE.md` を参照してください。

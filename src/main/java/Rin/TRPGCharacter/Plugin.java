@@ -22,6 +22,7 @@ public class Plugin extends JavaPlugin {
     private CompositeSkillManager compositeSkillManager;
     private JoinGuideManager joinGuideManager;
     private DeathManager deathManager;
+    private CorpseManager corpseManager;
     private DamageManager damageManager;
     private WeaponManager weaponManager;
     private DodgeManager dodgeManager;
@@ -48,6 +49,8 @@ public class Plugin extends JavaPlugin {
     private DiceAnimationManager diceAnimationManager;
     private SkillCooldownManager skillCooldownManager;
     private KpToolManager kpToolManager;
+    private EventEditorManager eventEditorManager;
+    private EditorWandManager editorWandManager;
     private CharacterGuiManager characterGuiManager;
     private CharacterCreationWizard characterCreationWizard;
     private TimeStopManager timeStopManager;
@@ -96,12 +99,15 @@ public class Plugin extends JavaPlugin {
         rollManager = new RollManager(this, skillEffectManager);
         inputManager = new InputManager(this, characterManager, skillManager, occupationManager);
         bookManager = new BookManager(this, characterManager, skillManager, occupationManager);
+        corpseManager = new CorpseManager(this);
         deathManager = new DeathManager(this, characterManager, bookManager);
         sidebarManager = new SidebarManager(this, characterManager);
         randomStatManager = new RandomStatManager(this, characterManager);
         diceSoundManager = new DiceSoundManager(this);
         diceAnimationManager = new DiceAnimationManager(this);
         skillCooldownManager = new SkillCooldownManager(this);
+        eventEditorManager = new EventEditorManager(this);
+        editorWandManager = new EditorWandManager(this);
         kpToolManager = new KpToolManager(this, keeperManager);
         characterGuiManager = new CharacterGuiManager(this, characterManager, skillManager);
         characterCreationWizard = new CharacterCreationWizard(this, characterManager, skillManager, occupationManager);
@@ -133,6 +139,8 @@ public class Plugin extends JavaPlugin {
                 new ChatInputListener(this, inputManager), this
         );
         getServer().getPluginManager().registerEvents(kpToolManager, this);
+        getServer().getPluginManager().registerEvents(eventEditorManager, this);
+        getServer().getPluginManager().registerEvents(editorWandManager, this);
         getServer().getPluginManager().registerEvents(characterGuiManager, this);
         getServer().getPluginManager().registerEvents(characterCreationWizard, this);
         getServer().getPluginManager().registerEvents(
@@ -141,6 +149,7 @@ public class Plugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(
                 deathManager, this
         );
+        getServer().getPluginManager().registerEvents(corpseManager, this);
         getServer().getPluginManager().registerEvents(
                 combatManager, this
         );
@@ -197,6 +206,8 @@ public class Plugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (eventEditorManager != null) eventEditorManager.save();
+        if (corpseManager != null) corpseManager.shutdown();
         if (sessionClockManager != null) {
             sessionClockManager.shutdown();
         }
@@ -1763,7 +1774,11 @@ public class Plugin extends JavaPlugin {
     public SkillCooldownManager getSkillCooldownManager() { return skillCooldownManager; }
     public SessionManager getSessionManager() { return sessionManager; }
     public KpToolManager getKpToolManager() { return kpToolManager; }
+    public EventEditorManager getEventEditorManager() { return eventEditorManager; }
+    public EditorWandManager getEditorWandManager() { return editorWandManager; }
+    public ArtifactEditorManager getArtifactEditorManager() { return artifactEditorManager; }
     public DeathManager getDeathManager() { return deathManager; }
+    public CorpseManager getCorpseManager() { return corpseManager; }
 
     public CustomSkillManager getCustomSkillManager() { return customSkillManager; }
 

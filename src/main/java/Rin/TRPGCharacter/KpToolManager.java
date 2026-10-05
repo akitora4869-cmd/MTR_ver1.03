@@ -45,18 +45,21 @@ public class KpToolManager implements Listener {
     @EventHandler public void interact(PlayerInteractEvent e){
         if (!e.getAction().isRightClick()) return;
         if(tagged(e.getItem(),kpKey)){e.setCancelled(true); if(allowed(e.getPlayer())) open(e.getPlayer());}
-        else if(tagged(e.getItem(),editorKey)){e.setCancelled(true); if(allowed(e.getPlayer())) openEditor(e.getPlayer());}
+        else if(tagged(e.getItem(),editorKey)){ if(plugin.getEditorWandManager()!=null && plugin.getEditorWandManager().isSelecting(e.getPlayer())) return; e.setCancelled(true); if(allowed(e.getPlayer())) openEditor(e.getPlayer());}
     }
     public void open(Player p){
         Inventory inv=Bukkit.createInventory(null,27,TITLE);
         inv.setItem(10,item(Material.SUNFLOWER,"朝 06:00")); inv.setItem(11,item(Material.CLOCK,"昼 12:00")); inv.setItem(12,item(Material.ORANGE_DYE,"夕方 18:00")); inv.setItem(13,item(Material.BLACK_DYE,"深夜 00:00"));
         inv.setItem(15,item(Material.WATER_BUCKET,"雨 / 晴れ 切替")); inv.setItem(16,item(Material.LIGHTNING_ROD,"雷雨"));
         inv.setItem(18,item(Material.TOTEM_OF_UNDYING,"探索者管理 / リバイブ"));
+        inv.setItem(19,item(Material.SKELETON_SKULL,"遺体・血痕管理"));
         inv.setItem(20,item(Material.ENCHANTED_BOOK,"オリジナル技能管理")); inv.setItem(22,item(Material.BLAZE_ROD,"EDITOR WANDを受け取る")); p.openInventory(inv);
     }
+    public void openEditorMenu(Player p){ openEditor(p); }
     private void openEditor(Player p){
         Inventory inv=Bukkit.createInventory(null,27,Component.text("MCTRPG EDITOR",NamedTextColor.DARK_AQUA));
-        inv.setItem(10,item(Material.BOOK,"調査ポイント [準備済み]")); inv.setItem(11,item(Material.IRON_DOOR,"扉・鍵 [既存機能]")); inv.setItem(12,item(Material.PLAYER_HEAD,"NPC [既存機能]")); inv.setItem(13,item(Material.ZOMBIE_HEAD,"敵 [既存機能]")); inv.setItem(14,item(Material.ENDER_PEARL,"TPポイント [次段階]")); inv.setItem(15,item(Material.REDSTONE_TORCH,"イベント [次段階]"));
+        inv.setItem(10,item(Material.BOOK,"調査ポイント [既存機能]")); inv.setItem(11,item(Material.IRON_DOOR,"扉・鍵 [既存機能]")); inv.setItem(12,item(Material.PLAYER_HEAD,"NPC [既存機能]")); inv.setItem(13,item(Material.ZOMBIE_HEAD,"敵 [既存機能]")); inv.setItem(14,item(Material.ENDER_PEARL,"TPポイント [基盤]")); inv.setItem(15,item(Material.REDSTONE_TORCH,"EVENT EDITOR"));
+        inv.setItem(16,item(Material.GOLDEN_AXE,"エリア / Trigger設定")); inv.setItem(20,item(Material.AMETHYST_SHARD,"Editor View ON/OFF")); inv.setItem(21,item(Material.ENCHANTED_BOOK,"Artifact Editor")); inv.setItem(22,item(Material.KNOWLEDGE_BOOK,"Custom Skill Editor"));
         p.openInventory(inv);
     }
     private void openPlayers(Player kp){
@@ -86,6 +89,10 @@ public class KpToolManager implements Listener {
     @EventHandler public void click(InventoryClickEvent e){
         if(!(e.getWhoClicked() instanceof Player p)||e.getCurrentItem()==null) return;
         Component viewTitle=e.getView().title();
+        if(viewTitle.equals(Component.text("遺体・血痕管理",NamedTextColor.DARK_RED))){
+            e.setCancelled(true); if(!allowed(p))return;
+            plugin.getCorpseManager().handleKpClick(p,e.getCurrentItem(),e.getRawSlot(),e.isRightClick()); return;
+        }
         if(viewTitle.equals(TITLE)){
             e.setCancelled(true); if(!allowed(p))return;
             int slot=e.getRawSlot();
@@ -93,8 +100,17 @@ public class KpToolManager implements Listener {
             else if(slot==15){World w=p.getWorld(); boolean raining=w.hasStorm(); w.setStorm(!raining); w.setThundering(false); p.sendMessage(ChatColor.AQUA+"天候を "+(!raining?"雨":"晴れ")+" に変更しました。");}
             else if(slot==16){World w=p.getWorld();w.setStorm(true);w.setThundering(true);p.sendMessage(ChatColor.DARK_AQUA+"雷雨に変更しました。");}
             else if(slot==18){openPlayers(p);}
+            else if(slot==19){plugin.getCorpseManager().openKpGui(p);}
             else if(slot==20){plugin.getCustomSkillManager().openKp(p);}
             else if(slot==22){p.getInventory().addItem(createEditorWand());p.sendMessage(ChatColor.GOLD+"EDITOR WANDを渡しました。");}
+            return;
+        }
+        if(viewTitle.equals(Component.text("MCTRPG EDITOR",NamedTextColor.DARK_AQUA))){
+            e.setCancelled(true); if(!allowed(p))return; int slot=e.getRawSlot();
+            if(slot==15||slot==16){plugin.getEventEditorManager().open(p);}
+            else if(slot==20){plugin.getEditorWandManager().toggleDebug(p);openEditor(p);}
+            else if(slot==21){plugin.getArtifactEditorManager().open(p);}
+            else if(slot==22){plugin.getCustomSkillManager().openEditor(p);}
             return;
         }
         if(viewTitle.equals(PLAYER_TITLE)){
