@@ -28,6 +28,9 @@ commands:
   mythos:
     description: 神話生物NPCを管理します
     usage: /mythos <list|summon|sanreset|modelstatus> ...
+  customskill:
+    description: オリジナル技能の作成・KP確認・使用制限
+    usage: /customskill <create|kp|kpcreate|give|inspect> ...
   trpgskill:
     description: 技能ポイントを割り振ります
     usage: /trpgskill <hobby|hobby-reset|occupation|occupation-reset|shortcut|shortcut-reset> ...

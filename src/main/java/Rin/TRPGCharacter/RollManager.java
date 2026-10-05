@@ -105,7 +105,10 @@ public class RollManager {
     }
 
     public void rollSkillCheck(Player player, String skillId, String label, int target, RollVisibility visibility) {
-        if (!plugin.getSkillCooldownManager().tryUse(player)) {
+        if (plugin.getCustomSkillManager() != null && !plugin.getCustomSkillManager().canUse(player, skillId)) return;
+        boolean compositeContinuation = plugin.getCompositeSkillManager() != null
+                && plugin.getCompositeSkillManager().isManualContinuation(player, skillId);
+        if (!compositeContinuation && !plugin.getSkillCooldownManager().tryUse(player)) {
             return;
         }
 
@@ -134,6 +137,7 @@ public class RollManager {
 
             if (result.isSuccess()) {
                 skillEffectManager.applyOnSuccess(player, skillId, result);
+                if (plugin.getCustomSkillManager() != null) plugin.getCustomSkillManager().applySuccess(player, skillId);
                 if (result == CheckResult.CRITICAL) skillEffectManager.applyOnCritical(player, skillId);
                 if ("spot_hidden".equalsIgnoreCase(skillId) && plugin.getDarkVisionManager() != null)
                     plugin.getDarkVisionManager().onManualSpotHiddenSuccess(player);
@@ -141,6 +145,11 @@ public class RollManager {
                     plugin.getSwimManager().onManualSwimSuccess(player);
             } else if (result == CheckResult.FUMBLE) {
                 skillEffectManager.applyOnFumble(player, skillId);
+            }
+
+            // 手動で複合技能の構成技能を続けて振った場合、10秒以内なら自動結合する。
+            if (visibility == RollVisibility.PUBLIC && plugin.getCompositeSkillManager() != null) {
+                plugin.getCompositeSkillManager().recordManualResult(player, skillId, result);
             }
         });
     }

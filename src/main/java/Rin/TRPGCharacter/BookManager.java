@@ -361,7 +361,12 @@ public class BookManager {
 
         page = page.append(Component.text("登攀＋跳躍 ", NamedTextColor.BLACK))
                 .append(button("[判定]", NamedTextColor.DARK_GREEN,
-                        "/trpgcombo climb_jump", "段階判定を行います"));
+                        "/trpgcombo climb_jump", "段階判定を行います"))
+                .append(Component.newline()).append(Component.newline());
+
+        page = page.append(Component.text("跳躍＋キック（＋MA） ", NamedTextColor.BLACK))
+                .append(button("[飛び蹴り]", NamedTextColor.DARK_PURPLE,
+                        "/trpgcombo jump_kick", "跳躍＋キック。MA取得時は自動で追加判定します"));
 
         return page;
     }

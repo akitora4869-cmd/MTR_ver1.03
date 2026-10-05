@@ -94,6 +94,7 @@ public class CharacterGuiManager implements Listener {
         List<SkillDefinition> list=skills.groupByCategory().getOrDefault(category,List.of());
         int slot=0;
         for(SkillDefinition s:list) {
+            if (plugin.getCustomSkillManager()!=null && plugin.getCustomSkillManager().isCustom(s.getId()) && !plugin.getCustomSkillManager().owns(p,s.getId())) continue;
             if(slot>=45) break;
             boolean fav=characters.isSkillShortcut(p,s.getId());
             ItemStack it=item(Material.PAPER,(fav?"★ ":"")+s.getName(),"技能値: "+skills.getSkillValue(p,s.getId()),"左クリック: 判定","右クリック: ★登録/解除");
@@ -109,6 +110,7 @@ public class CharacterGuiManager implements Listener {
         int[] slots={9,10,11,12,13,14,15,16,17};
         for(int i=0;i<Math.min(9,fav.size());i++) {
             SkillDefinition s=skills.getSkill(fav.get(i)); if(s==null) continue;
+            if (plugin.getCustomSkillManager()!=null && plugin.getCustomSkillManager().isCustom(s.getId()) && !plugin.getCustomSkillManager().owns(p,s.getId())) continue;
             ItemStack it=item(Material.PAPER,s.getName(),"技能値: "+skills.getSkillValue(p,s.getId()),"左クリック: 即判定","右クリック: お気に入り解除");
             ItemMeta m=it.getItemMeta(); m.getPersistentDataContainer().set(skillIdKey,PersistentDataType.STRING,s.getId()); it.setItemMeta(m); inv.setItem(slots[i],it);
         }

@@ -31,6 +31,7 @@ public class Plugin extends JavaPlugin {
     private MythosManager mythosManager;
     private ArtifactManager artifactManager;
     private ArtifactEditorManager artifactEditorManager;
+    private CustomSkillManager customSkillManager;
     private CombatManager combatManager;
     private EnemyManager enemyManager;
     private EnemyCombatManager enemyCombatManager;
@@ -82,6 +83,7 @@ public class Plugin extends JavaPlugin {
         mythosManager = new MythosManager(this, characterManager);
         artifactManager = new ArtifactManager(this, characterManager);
         artifactEditorManager = new ArtifactEditorManager(this, artifactManager);
+        customSkillManager = new CustomSkillManager(this, skillManager, characterManager);
         cultistManager = new CultistManager(this);
         enemyManager = new EnemyManager(this);
         combatManager = new CombatManager(this, characterManager, skillManager, weaponManager, armorManager, enemyManager, dodgeManager);
@@ -177,6 +179,7 @@ public class Plugin extends JavaPlugin {
                 artifactManager, this
         );
         getServer().getPluginManager().registerEvents(artifactEditorManager, this);
+        getServer().getPluginManager().registerEvents(customSkillManager, this);
         getServer().getPluginManager().registerEvents(
                 movementSkillManager, this
         );
@@ -258,6 +261,7 @@ public class Plugin extends JavaPlugin {
         PluginCommand trpgattack = getCommand("trpgattack");
         PluginCommand mythos = getCommand("mythos");
         PluginCommand trpgskill = getCommand("trpgskill");
+        PluginCommand customskill = getCommand("customskill");
         PluginCommand trpgoccupation = getCommand("trpgoccupation");
         PluginCommand artifact = getCommand("artifact");
         PluginCommand npc = getCommand("npc");
@@ -329,6 +333,7 @@ public class Plugin extends JavaPlugin {
             mythos.setExecutor(this::handleMythos);
         }
 
+        if (customskill != null) customskill.setExecutor(this::handleCustomSkill);
         if (trpgskill != null) {
             trpgskill.setExecutor(this::handleTrpgSkill);
         }
@@ -465,6 +470,21 @@ public class Plugin extends JavaPlugin {
         sender.sendMessage(color("&e/artifact list"));
         sender.sendMessage(color("&e/artifact give <player> <id>"));
         sender.sendMessage(color("&e/artifact remove <player> <id>"));
+        return true;
+    }
+
+    private boolean handleCustomSkill(CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player player)) { sender.sendMessage("プレイヤーのみ使用できます。"); return true; }
+        if (args.length == 0 || args[0].equalsIgnoreCase("create") || args[0].equalsIgnoreCase("editor")) { customSkillManager.openEditor(player); return true; }
+        if (args[0].equalsIgnoreCase("kp")) { customSkillManager.openKp(player); return true; }
+        if (args[0].equalsIgnoreCase("kpcreate") || args[0].equalsIgnoreCase("scenario")) { customSkillManager.openKpEditor(player); return true; }
+        if (args[0].equalsIgnoreCase("give") && args.length >= 3) { Player target=getServer().getPlayerExact(args[1]); if(target==null){player.sendMessage(color("&c対象がオンラインではありません。"));return true;} Integer value=null; if(args.length>=4)try{value=Integer.parseInt(args[3]);}catch(Exception ignored){} if(!customSkillManager.grant(player,target,args[2],value))player.sendMessage(color("&c付与できませんでした。KP権限・技能IDを確認してください。")); return true; }
+        if (args[0].equalsIgnoreCase("inspect") && args.length >= 2) { Player target=getServer().getPlayerExact(args[1]); if(target==null){player.sendMessage(color("&c対象がオンラインではありません。"));return true;} customSkillManager.inspect(player,target); return true; }
+        player.sendMessage(color("&e/customskill create &7- オリジナル技能を作成"));
+        player.sendMessage(color("&e/customskill kp &7- KP用の確認・使用制限GUI"));
+        player.sendMessage(color("&e/customskill kpcreate &7- KP用シナリオ技能を作成"));
+        player.sendMessage(color("&e/customskill give <player> <id> [value] &7- KPが技能を付与"));
+        player.sendMessage(color("&e/customskill inspect <player> &7- 対象のオリジナル技能を確認"));
         return true;
     }
 
@@ -1550,6 +1570,7 @@ public class Plugin extends JavaPlugin {
             }
 
             sessionClockManager.onSessionEnd();
+            customSkillManager.cleanupSessionSkills();
 
             getServer().broadcastMessage(color("&6[SESSION] &dセッション「&f"
                     + endedName + "&d」を終了しました。"));
@@ -1742,5 +1763,11 @@ public class Plugin extends JavaPlugin {
     public SkillCooldownManager getSkillCooldownManager() { return skillCooldownManager; }
     public SessionManager getSessionManager() { return sessionManager; }
     public KpToolManager getKpToolManager() { return kpToolManager; }
+
+    public CustomSkillManager getCustomSkillManager() { return customSkillManager; }
+
+    public CompositeSkillManager getCompositeSkillManager() {
+        return compositeSkillManager;
+    }
 
 }

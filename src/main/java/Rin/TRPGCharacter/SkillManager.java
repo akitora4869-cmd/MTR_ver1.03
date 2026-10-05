@@ -53,6 +53,19 @@ public class SkillManager {
             skills.put(id, new SkillDefinition(id, name, defaultValue, category));
         }
 
+        // Player-created skills are stored separately so the built-in list stays clean.
+        File customFile = new File(plugin.getDataFolder(), "custom-skills.yml");
+        YamlConfiguration custom = YamlConfiguration.loadConfiguration(customFile);
+        ConfigurationSection customSection = custom.getConfigurationSection("skills");
+        if (customSection != null) {
+            for (String id : customSection.getKeys(false)) {
+                String base = "skills." + id;
+                skills.put(id, new SkillDefinition(id, custom.getString(base + ".name", id),
+                        String.valueOf(custom.get(base + ".default", 0)),
+                        custom.getString(base + ".category", "オリジナル技能")));
+            }
+        }
+
         // 既存サーバーの古い skills.yml でも戦闘技能を利用できるようにする。
         boolean changed = false;
         changed |= ensureBuiltInSkill(config, "dodge", "回避", "DEX*2", "戦闘技能");

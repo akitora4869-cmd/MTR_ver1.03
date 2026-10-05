@@ -44,7 +44,7 @@ public class KpToolManager implements Listener {
     public void open(Player p){
         Inventory inv=Bukkit.createInventory(null,27,TITLE);
         inv.setItem(10,item(Material.SUNFLOWER,"朝 06:00")); inv.setItem(11,item(Material.CLOCK,"昼 12:00")); inv.setItem(12,item(Material.ORANGE_DYE,"夕方 18:00")); inv.setItem(13,item(Material.BLACK_DYE,"深夜 00:00"));
-        inv.setItem(15,item(Material.WATER_BUCKET,"雨 / 晴れ 切替")); inv.setItem(16,item(Material.LIGHTNING_ROD,"雷雨")); inv.setItem(22,item(Material.BLAZE_ROD,"EDITOR WANDを受け取る")); p.openInventory(inv);
+        inv.setItem(15,item(Material.WATER_BUCKET,"雨 / 晴れ 切替")); inv.setItem(16,item(Material.LIGHTNING_ROD,"雷雨")); inv.setItem(20,item(Material.ENCHANTED_BOOK,"オリジナル技能管理")); inv.setItem(22,item(Material.BLAZE_ROD,"EDITOR WANDを受け取る")); p.openInventory(inv);
     }
     private void openEditor(Player p){
         Inventory inv=Bukkit.createInventory(null,27,Component.text("MCTRPG EDITOR",NamedTextColor.DARK_AQUA));
@@ -61,6 +61,7 @@ public class KpToolManager implements Listener {
         if(slot>=10&&slot<=13){int[] mins={360,720,1080,0}; setTime(p,mins[slot-10]);}
         else if(slot==15){World w=p.getWorld(); boolean raining=w.hasStorm(); w.setStorm(!raining); w.setThundering(false); p.sendMessage(ChatColor.AQUA+"天候を "+(!raining?"雨":"晴れ")+" に変更しました。");}
         else if(slot==16){World w=p.getWorld();w.setStorm(true);w.setThundering(true);p.sendMessage(ChatColor.DARK_AQUA+"雷雨に変更しました。");}
+        else if(slot==20){plugin.getCustomSkillManager().openKp(p);}
         else if(slot==22){p.getInventory().addItem(createEditorWand());p.sendMessage(ChatColor.GOLD+"EDITOR WANDを渡しました。");}
     }
     private void setTime(Player p,int minutes){
