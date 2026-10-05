@@ -162,7 +162,7 @@ public class EventEditorManager implements Listener {
     private boolean conditionsPass(EventDef d,Player p){for(ConditionDef c:d.conditions){try{if(c.type==ConditionType.HAS_ITEM){Material m=Material.valueOf(c.value);boolean found=Arrays.stream(p.getInventory().getContents()).filter(Objects::nonNull).anyMatch(i->i.getType()==m);if(!found)return false;}else if(c.type==ConditionType.HP_BELOW){if(plugin.getCharacterManagerInternal().getCurrentHp(p)>Integer.parseInt(c.value))return false;}}catch(Exception ex){return false;}}return true;}
     private void apply(ActionDef a,Player p){try{switch(a.type){
         case MESSAGE -> p.sendMessage(ChatColor.translateAlternateColorCodes('&',a.value));
-        case TITLE -> p.showTitle(org.bukkit.Title.title(Component.text(a.value),Component.empty()));
+        case TITLE -> p.showTitle(net.kyori.adventure.title.Title.title(Component.text(a.value), Component.empty()));
         case SOUND -> p.playSound(p.getLocation(),Sound.valueOf(a.value),1f,1f);
         case TELEPORT_HERE -> {String[] s=a.value.split(",");World w=Bukkit.getWorld(s[0]);if(w!=null)p.teleport(new Location(w,Double.parseDouble(s[1]),Double.parseDouble(s[2]),Double.parseDouble(s[3]),Float.parseFloat(s[4]),Float.parseFloat(s[5])));}
         case SET_TIME -> p.getWorld().setTime(parseLong(a.value,6000));
