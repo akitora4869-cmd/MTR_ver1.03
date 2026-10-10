@@ -3,6 +3,7 @@ package Rin.TRPGCharacter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
+import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.entity.AbstractArrow;
@@ -101,7 +102,7 @@ public final class DeepOneSpearManager implements Listener {
         int roll = random.nextInt(100) + 1;
         CheckResult result = CheckResult.evaluate(roll, skill);
         plugin.getSkillGrowthManager().tryGrowth(player, "throw", "投擲", result);
-        player.sendMessage(Plugin.color("&3[石槍・投擲] &f〈投擲〉 &b"+skill+" &7/ 1d100:&e"+roll+" &7→ "+result.color()+result.label()));
+        player.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3[石槍・投擲] &f〈投擲〉 &b"+skill+" &7/ 1d100:&e"+roll+" &7→ "+result.color()+result.label()));
         plugin.getDiceSoundManager().playResultSound(player, result);
         if (!result.isSuccess()) return;
 
@@ -109,7 +110,7 @@ public final class DeepOneSpearManager implements Listener {
         if (result == CheckResult.CRITICAL) damage = 8;
         else if (result == CheckResult.SPECIAL) damage += 1;
         target.damage(Math.max(1, damage));
-        player.sendMessage(Plugin.color("&3[石槍] &f投擲ダメージ: &c"+damage));
+        player.sendMessage(ChatColor.translateAlternateColorCodes('&', "&3[石槍] &f投擲ダメージ: &c"+damage));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
