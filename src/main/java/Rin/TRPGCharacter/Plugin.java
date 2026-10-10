@@ -51,6 +51,7 @@ public class Plugin extends JavaPlugin {
     private KpToolManager kpToolManager;
     private EventEditorManager eventEditorManager;
     private EditorWandManager editorWandManager;
+    private InvestigationPointManager investigationPointManager;
     private CharacterGuiManager characterGuiManager;
     private CharacterCreationWizard characterCreationWizard;
     private TimeStopManager timeStopManager;
@@ -60,6 +61,8 @@ public class Plugin extends JavaPlugin {
     private DamageFeedbackManager damageFeedbackManager;
     private ModelEngineBridgeManager modelEngineBridgeManager;
     private DeepOneVisualManager deepOneVisualManager;
+    private DeepOneAiManager deepOneAiManager;
+    private DeepOneSpearManager deepOneSpearManager;
     private DoorLockManager doorLockManager;
     private CultistManager cultistManager;
     private final java.util.Map<java.util.UUID, Long> resetPlayersConfirmUntil = new java.util.HashMap<>();
@@ -107,6 +110,7 @@ public class Plugin extends JavaPlugin {
         diceAnimationManager = new DiceAnimationManager(this);
         skillCooldownManager = new SkillCooldownManager(this);
         eventEditorManager = new EventEditorManager(this);
+        investigationPointManager = new InvestigationPointManager(this);
         editorWandManager = new EditorWandManager(this);
         kpToolManager = new KpToolManager(this, keeperManager);
         characterGuiManager = new CharacterGuiManager(this, characterManager, skillManager);
@@ -119,6 +123,8 @@ public class Plugin extends JavaPlugin {
         damageFeedbackManager = new DamageFeedbackManager(this);
         modelEngineBridgeManager = new ModelEngineBridgeManager(this, mythosManager);
         deepOneVisualManager = new DeepOneVisualManager(this, mythosManager);
+        deepOneSpearManager = new DeepOneSpearManager(this);
+        deepOneAiManager = new DeepOneAiManager(this, mythosManager, deepOneSpearManager);
         doorLockManager = new DoorLockManager(this, skillManager, keeperManager);
         darkVisionManager = new DarkVisionManager(this, characterManager, skillManager);
         swimManager = new SwimManager(this, characterManager, skillManager);
@@ -132,6 +138,7 @@ public class Plugin extends JavaPlugin {
         mythosManager.start();
         modelEngineBridgeManager.start();
         deepOneVisualManager.start();
+        deepOneAiManager.start();
         sanZeroAloneManager.start();
         cultistManager.start();
 
@@ -141,6 +148,7 @@ public class Plugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(kpToolManager, this);
         getServer().getPluginManager().registerEvents(eventEditorManager, this);
         getServer().getPluginManager().registerEvents(editorWandManager, this);
+        getServer().getPluginManager().registerEvents(investigationPointManager, this);
         getServer().getPluginManager().registerEvents(characterGuiManager, this);
         getServer().getPluginManager().registerEvents(characterCreationWizard, this);
         getServer().getPluginManager().registerEvents(
@@ -150,6 +158,8 @@ public class Plugin extends JavaPlugin {
                 deathManager, this
         );
         getServer().getPluginManager().registerEvents(corpseManager, this);
+        getServer().getPluginManager().registerEvents(deepOneAiManager, this);
+        getServer().getPluginManager().registerEvents(deepOneSpearManager, this);
         getServer().getPluginManager().registerEvents(
                 combatManager, this
         );
@@ -207,6 +217,7 @@ public class Plugin extends JavaPlugin {
     @Override
     public void onDisable() {
         if (eventEditorManager != null) eventEditorManager.save();
+        if (investigationPointManager != null) investigationPointManager.save();
         if (corpseManager != null) corpseManager.shutdown();
         if (sessionClockManager != null) {
             sessionClockManager.shutdown();
@@ -228,6 +239,7 @@ public class Plugin extends JavaPlugin {
             cultistManager.shutdown();
         }
 
+        if (deepOneAiManager != null) deepOneAiManager.shutdown();
         if (deepOneVisualManager != null) {
             deepOneVisualManager.shutdown();
         }
@@ -680,6 +692,21 @@ public class Plugin extends JavaPlugin {
             return true;
         }
 
+        if (args.length >= 1 && args[0].equalsIgnoreCase("spear")) {
+            Player target = player;
+            if (args.length >= 2) {
+                target = getServer().getPlayerExact(args[1]);
+                if (target == null) {
+                    player.sendMessage(color("&c対象プレイヤーがオンラインではありません。"));
+                    return true;
+                }
+            }
+            target.getInventory().addItem(deepOneSpearManager.createSpear());
+            player.sendMessage(color("&3[神話生物] &f" + target.getName() + " &aに深きものの石槍を付与しました。"));
+            if (!target.equals(player)) target.sendMessage(color("&3深きものの石槍 &fを入手した。"));
+            return true;
+        }
+
         if (args.length == 2 && args[0].equalsIgnoreCase("summon")) {
             org.bukkit.entity.LivingEntity entity =
                     mythosManager.summon(player, args[1]);
@@ -717,6 +744,7 @@ public class Plugin extends JavaPlugin {
         player.sendMessage(color("&e/mythos list"));
         player.sendMessage(color("&e/mythos modelstatus"));
         player.sendMessage(color("&e/mythos summon <id>"));
+        player.sendMessage(color("&e/mythos spear [player]"));
         player.sendMessage(color("&e/mythos sanreset <player>"));
         return true;
     }
@@ -1714,6 +1742,8 @@ public class Plugin extends JavaPlugin {
         return deepOneVisualManager;
     }
 
+    public DeepOneSpearManager getDeepOneSpearManager() { return deepOneSpearManager; }
+
     public ArtifactManager getArtifactManager() {
         return artifactManager;
     }
@@ -1776,6 +1806,7 @@ public class Plugin extends JavaPlugin {
     public KpToolManager getKpToolManager() { return kpToolManager; }
     public EventEditorManager getEventEditorManager() { return eventEditorManager; }
     public EditorWandManager getEditorWandManager() { return editorWandManager; }
+    public InvestigationPointManager getInvestigationPointManager() { return investigationPointManager; }
     public ArtifactEditorManager getArtifactEditorManager() { return artifactEditorManager; }
     public DeathManager getDeathManager() { return deathManager; }
     public CorpseManager getCorpseManager() { return corpseManager; }

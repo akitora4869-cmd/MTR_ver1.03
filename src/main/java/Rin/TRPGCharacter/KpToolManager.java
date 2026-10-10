@@ -107,7 +107,8 @@ public class KpToolManager implements Listener {
         }
         if(viewTitle.equals(Component.text("MCTRPG EDITOR",NamedTextColor.DARK_AQUA))){
             e.setCancelled(true); if(!allowed(p))return; int slot=e.getRawSlot();
-            if(slot==15||slot==16){plugin.getEventEditorManager().open(p);}
+            if(slot==10){plugin.getEditorWandManager().beginInvestigationPlacement(p);}
+            else if(slot==15||slot==16){plugin.getEventEditorManager().open(p);}
             else if(slot==20){plugin.getEditorWandManager().toggleDebug(p);openEditor(p);}
             else if(slot==21){plugin.getArtifactEditorManager().open(p);}
             else if(slot==22){plugin.getCustomSkillManager().openEditor(p);}

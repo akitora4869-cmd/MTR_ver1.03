@@ -47,7 +47,11 @@ public class WeaponManager {
     }
 
     public WeaponDefinition resolve(Player player) {
-        Material material = player.getInventory().getItemInMainHand().getType();
+        var held = player.getInventory().getItemInMainHand();
+        if (plugin.getDeepOneSpearManager() != null && plugin.getDeepOneSpearManager().isSpear(held)) {
+            return plugin.getDeepOneSpearManager().meleeDefinition();
+        }
+        Material material = held.getType();
 
         if (material == Material.AIR) {
             return resolveUnarmed(characterManager.getUnarmedAttack(player));

@@ -502,3 +502,25 @@ KPも通常のCustom Skill Editorと同じGUIからオリジナル技能を作�
 ## Event Editor / EDITOR WAND (Fix10)
 
 Fix10ではEDITOR WANDをシナリオ制作の中心ツールへ拡張し、Event Editorの基盤を実装しました。Eventは `Trigger -> Condition -> Action` で構成し、AREA_ENTERエリアはWANDで2点を直接指定できます。Actionは上から順に実行され、WAITを挟んだタイムライン演出にも対応します。Editor ViewではKPだけにイベント範囲を可視化できます。詳細は `EVENT_EDITOR_GUIDE.md` を参照してください。
+
+
+## Fix12: Clue / Artifact Event Integration
+Event Editorから手掛かり取得とArtifact付与を実行できるようになりました。Conditionには取得済みClueとArtifact所持を追加し、GUI上でConditionの値編集・削除も可能です。直接取得したClueは `clue-acquisition-history.yml` に探索者別で保存され、後続Eventの条件に利用できます。
+
+### Rebuild Fix13 - Event automation expansion
+Event Editor now includes world-control actions (doors/lights), NPC/Mythos spawn actions, block/death triggers, and conditional/random event branching. Existing Fix10-Fix12 event definitions remain loadable.
+
+## Fix14 - Deep One dedicated AI / corpse
+- Added `DeepOneAiManager` for `deep_one` only.
+- Deep Ones wander normally when no investigator is detected.
+- On detecting a valid investigator within 24 blocks and line of sight, they target the investigator and throw tridents at range.
+- Inside 6 blocks they back away while continuing ranged pressure; thrown tridents use a 2.5 second cooldown and cannot be picked up.
+- Vanilla hand weapons are cleared so the plugin-controlled spear attack is authoritative.
+- On death, normal drops/XP are suppressed and a persistent `深きものの死骸` is registered in the corpse system.
+- Deep One corpses use the existing Deep One custom model data when available and can be inspected by right-click.
+
+## Fix16 - Deep One Stone Spear combat integration
+- Stone spear melee attacks now use the dedicated 〈槍〉 skill (base 20) and 1d6+DB.
+- Player-thrown stone spears use 〈投擲〉 and 1d8 damage.
+- The spear requests a per-item durability maximum of 96 on modern Paper, with vanilla durability as a compatibility fallback.
+- Deep One corpses yield one stone spear on first inspection only; recovery state is persistent.

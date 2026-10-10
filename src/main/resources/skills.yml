@@ -670,6 +670,24 @@ skills:
         upward: 0.25
       - type: message
         text: '&4☠ 着地に失敗して転倒しました。'
+  spear:
+    name: "槍"
+    default: 20
+    category: "戦闘技能"
+
+    critical:
+      enabled: true
+      inherit-defaults: false
+      effects:
+      - type: message
+        text: '&6★ 鋭い槍捌きで急所を捉えました。'
+    fumble:
+      enabled: true
+      inherit-defaults: false
+      effects:
+      - type: message
+        text: '&4☠ 槍の扱いを誤り、大きく体勢を崩しました。'
+
   throw:
     name: "投擲"
     default: 25

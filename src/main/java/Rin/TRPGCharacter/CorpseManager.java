@@ -59,15 +59,19 @@ public class CorpseManager implements Listener {
     }
 
     public void createPlayerCorpse(Player player, int deathHp){
-        createCorpse(player.getName(), player.getUniqueId(), player.getLocation(), deathHp, true);
+        createCorpse(player.getName(), player.getUniqueId(), player.getLocation(), deathHp, true, null);
     }
 
-    private void createCorpse(String name, UUID owner, Location loc, int deathHp, boolean player){
+    public void createMythosCorpse(String name, String mythosId, Location location){
+        createCorpse(name, null, location, 0, false, mythosId);
+    }
+
+    private void createCorpse(String name, UUID owner, Location loc, int deathHp, boolean player, String mythosId){
         UUID id=UUID.randomUUID(); CorpseState state=CorpseState.fromHp(deathHp); long now=System.currentTimeMillis();
         String p="corpses."+id;
         data.set(p+".name",name); data.set(p+".owner",owner==null?null:owner.toString()); data.set(p+".world",loc.getWorld().getName());
         data.set(p+".x",loc.getX()); data.set(p+".y",loc.getY()); data.set(p+".z",loc.getZ()); data.set(p+".yaw",loc.getYaw());
-        data.set(p+".death-hp",deathHp); data.set(p+".state",state.name()); data.set(p+".death-time",now); data.set(p+".player",player);
+        data.set(p+".death-hp",deathHp); data.set(p+".state",state.name()); data.set(p+".death-time",now); data.set(p+".player",player); data.set(p+".mythos-id",mythosId);
         data.set(p+".blood-expires",now+BLOOD_LIFETIME_MS); save(); spawn(id);
     }
 
@@ -86,7 +90,7 @@ public class CorpseManager implements Listener {
         // EntityDeathEvent fires at zero; the last recorded post-hit HP gives an overkill approximation.
         int deathHp=(int)Math.floor(Math.min(0, after));
         String name=le.customName()!=null ? net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer.plainText().serialize(le.customName()) : le.getType().name();
-        createCorpse(name, le.getUniqueId(), le.getLocation(), deathHp, false);
+        createCorpse(name, le.getUniqueId(), le.getLocation(), deathHp, false, null);
     }
 
     private boolean isHumanLike(Entity e){
@@ -115,6 +119,9 @@ public class CorpseManager implements Listener {
     }
 
     private ItemStack corpseIcon(String p, CorpseState state){
+        if("deep_one".equalsIgnoreCase(data.getString(p+".mythos-id",""))){
+            ItemStack body=new ItemStack(Material.PAPER); var meta=body.getItemMeta(); meta.setCustomModelData(DeepOneVisualManager.MODEL_DATA); body.setItemMeta(meta); return body;
+        }
         if(data.getBoolean(p+".player",false) && state!=CorpseState.UNRECOGNIZABLE){
             ItemStack head=new ItemStack(Material.PLAYER_HEAD); SkullMeta sm=(SkullMeta)head.getItemMeta();
             String raw=data.getString(p+".owner"); if(raw!=null)try{sm.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString(raw)));}catch(Exception ignored){}
@@ -128,8 +135,21 @@ public class CorpseManager implements Listener {
         String raw=e.getRightClicked().getPersistentDataContainer().get(corpseKey,PersistentDataType.STRING); if(raw==null)return;
         e.setCancelled(true); UUID id; try{id=UUID.fromString(raw);}catch(Exception ex){return;} String p="corpses."+id;
         CorpseState state=CorpseState.valueOf(data.getString(p+".state",CorpseState.CLEAN.name())); int hp=data.getInt(p+".death-hp");
-        e.getPlayer().sendMessage(Component.text("【遺体】 ",NamedTextColor.DARK_RED).append(Component.text(state.label,NamedTextColor.RED)));
-        e.getPlayer().sendMessage(Component.text(state.description,NamedTextColor.GRAY));
+        String mythosId=data.getString(p+".mythos-id","");
+        if("deep_one".equalsIgnoreCase(mythosId)){
+            e.getPlayer().sendMessage(Component.text("【深きものの死骸】",NamedTextColor.DARK_AQUA));
+            e.getPlayer().sendMessage(Component.text("魚類と人型生物の特徴が入り混じった、不気味な死骸だ。",NamedTextColor.GRAY));
+            if(!data.getBoolean(p+".deep-one-spear-recovered",false) && plugin.getDeepOneSpearManager()!=null){
+                e.getPlayer().getInventory().addItem(plugin.getDeepOneSpearManager().createSpear());
+                data.set(p+".deep-one-spear-recovered",true); save();
+                e.getPlayer().sendMessage(Component.text("死骸の傍らから、荒削りな石槍を回収した。",NamedTextColor.AQUA));
+            } else if(data.getBoolean(p+".deep-one-spear-recovered",false)){
+                e.getPlayer().sendMessage(Component.text("石槍はすでに回収されている。",NamedTextColor.DARK_GRAY));
+            }
+        } else {
+            e.getPlayer().sendMessage(Component.text("【遺体】 ",NamedTextColor.DARK_RED).append(Component.text(state.label,NamedTextColor.RED)));
+            e.getPlayer().sendMessage(Component.text(state.description,NamedTextColor.GRAY));
+        }
         if(state==CorpseState.CLEAN || state==CorpseState.DAMAGED) e.getPlayer().sendMessage(Component.text("人物: "+data.getString(p+".name","不明"),NamedTextColor.YELLOW));
         if(canKp(e.getPlayer())) e.getPlayer().sendMessage(Component.text("[KP] 死亡時HP: "+hp+" / ID: "+id,NamedTextColor.DARK_GRAY));
     }

@@ -54,3 +54,42 @@ EDITOR WANDメニューの `Editor View ON/OFF` を使うと、KP本人だけに
 ## データ
 
 イベント定義は `plugins/MCTRPG-Rebuild/events.yml` に保存されます。
+
+## Fix11 additions
+- AREA_EXIT trigger.
+- HP_CHANGE / SAN_CHANGE / RUN_EVENT actions.
+- Investigation Points can branch to Event IDs for success, failure, critical and fumble.
+
+
+## Fix12 - Clue / Artifact integration
+- Action `GRANT_CLUE`: clues.yml のIDを指定し、探索者へ手掛かりを直接取得させます。情報表示・設定済み報酬・SANチェックにも接続します。
+- Action `GIVE_ARTIFACT`: artifacts.yml のIDを指定し、Artifactを付与します。
+- Condition `HAS_CLUE`: Event経由で取得済みのClue IDを要求します。
+- Condition `HAS_ARTIFACT`: 指定Artifactの所持を要求します。
+- EVENT SETTINGSのCondition欄に最大3件を表示し、左クリックで値編集、右クリックで削除できます。
+
+## Fix13 - World / Spawn / Trigger / Branch expansion
+
+Implemented in this build in the requested order:
+
+1. Door / lighting actions
+   - `TOGGLE_DOOR`: toggles any Bukkit `Openable` block at a stored world,x,y,z.
+   - `SET_LIGHT`: sets a `Lightable` block on/off; LIGHT blocks are supported with level 15/0.
+   - Event Settings slots 41 captures the block currently looked at (within 8 blocks).
+
+2. NPC / enemy spawn actions
+   - `SPAWN_NPC`: spawns a named Villager at a stored location. Value format: `name|world,x,y,z`.
+   - `SPAWN_ENEMY`: spawns an existing Mythos creature definition through MythosManager. Value format: `mythos_id|world,x,y,z`.
+
+3. Trigger expansion
+   - `BLOCK_INTERACT`: runs when the configured block is clicked. Trigger value: `world,x,y,z`.
+   - `PLAYER_DEATH`: runs when a player dies.
+   - `ENTITY_DEATH`: runs when an EntityType or Mythos ID dies. Trigger value: e.g. `ZOMBIE` or a Mythos ID.
+   - Trigger target can be edited from Event Settings slot 9.
+
+4. Event branch expansion
+   - `CONDITION_BRANCH`: `CONDITION_TYPE|value|true_event|false_event`.
+   - `RANDOM_BRANCH`: `chance_percent|success_event|failure_event`.
+   - Branch events reuse the existing Event engine, so conditions/repeat/actions on the destination event still apply.
+
+This remains backward-compatible with existing Fix10-Fix12 `events.yml`; the new `trigger-value` field defaults to empty.

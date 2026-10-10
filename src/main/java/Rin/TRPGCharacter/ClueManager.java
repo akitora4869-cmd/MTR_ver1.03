@@ -9,6 +9,7 @@ import org.bukkit.Sound;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -25,6 +26,7 @@ public class ClueManager {
     private final File sanHistoryFile;
     private final File fumbleHistoryFile;
     private final File rewardHistoryFile;
+    private final File acquisitionHistoryFile;
     private final CharacterManager characterManager;
     private YamlConfiguration config;
     private final NamespacedKey clueKey;
@@ -36,6 +38,7 @@ public class ClueManager {
     private final Map<UUID, Set<UUID>> destroyedForPlayer = new ConcurrentHashMap<>();
     private final Map<UUID, Set<String>> sanChecked = new ConcurrentHashMap<>();
     private final Map<UUID, Set<String>> rewardClaimed = new ConcurrentHashMap<>();
+    private final Map<UUID, Set<String>> acquiredClues = new ConcurrentHashMap<>();
 
     public ClueManager(Plugin plugin, CharacterManager characterManager) {
         this.plugin = plugin;
@@ -44,6 +47,7 @@ public class ClueManager {
         this.sanHistoryFile = new File(plugin.getDataFolder(), "clue-san-history.yml");
         this.fumbleHistoryFile = new File(plugin.getDataFolder(), "clue-fumble-history.yml");
         this.rewardHistoryFile = new File(plugin.getDataFolder(), "clue-reward-history.yml");
+        this.acquisitionHistoryFile = new File(plugin.getDataFolder(), "clue-acquisition-history.yml");
         this.clueKey = new NamespacedKey(plugin, "clue_id");
         this.hiddenKey = new NamespacedKey(plugin, "clue_hidden");
         this.protectedKey = new NamespacedKey(plugin, "clue_protected");
@@ -56,11 +60,50 @@ public class ClueManager {
         loadSanHistory();
         loadFumbleHistory();
         loadRewardHistory();
+        loadAcquisitionHistory();
         plugin.getServer().getScheduler().runTaskTimer(plugin, this::tickParticles, 10L, 10L);
     }
 
     public void reload() {
         this.config = YamlConfiguration.loadConfiguration(file);
+    }
+
+
+    /** Event Editor / scenario flow can grant a clue without a physical ArmorStand. */
+    public boolean grantClueDirect(Player player, String clueId) {
+        if (player == null || clueId == null || !clueExists(clueId)) return false;
+        Set<String> set = acquiredClues.computeIfAbsent(player.getUniqueId(), k -> ConcurrentHashMap.newKeySet());
+        boolean first = set.add(clueId);
+        if (first) saveAcquisitionHistory();
+        player.sendMessage(color("&f------------------------------"));
+        player.sendMessage(color("&b[手掛かり取得] &f" + config.getString(clueId + ".display-name", clueId)));
+        for (String line : config.getStringList(clueId + ".text")) player.sendMessage(color("&7" + line));
+        player.sendMessage(color("&f------------------------------"));
+        grantConfiguredRewardIfNeeded(player, clueId);
+        performSanCheckIfNeeded(player, clueId);
+        return true;
+    }
+
+    public boolean hasAcquiredClue(Player player, String clueId) {
+        return player != null && clueId != null && acquiredClues.getOrDefault(player.getUniqueId(), Collections.emptySet()).contains(clueId);
+    }
+
+    private void loadAcquisitionHistory() {
+        acquiredClues.clear();
+        if (!acquisitionHistoryFile.exists()) return;
+        YamlConfiguration y = YamlConfiguration.loadConfiguration(acquisitionHistoryFile);
+        ConfigurationSection root = y.getConfigurationSection("players");
+        if (root == null) return;
+        for (String u : root.getKeys(false)) try {
+            UUID id = UUID.fromString(u); Set<String> set = ConcurrentHashMap.newKeySet();
+            set.addAll(y.getStringList("players." + u + ".clues")); if (!set.isEmpty()) acquiredClues.put(id, set);
+        } catch (IllegalArgumentException ignored) {}
+    }
+
+    private synchronized void saveAcquisitionHistory() {
+        YamlConfiguration y = new YamlConfiguration();
+        for (Map.Entry<UUID, Set<String>> e : acquiredClues.entrySet()) y.set("players." + e.getKey() + ".clues", new ArrayList<>(e.getValue()));
+        try { y.save(acquisitionHistoryFile); } catch (java.io.IOException e) { plugin.getLogger().severe("clue-acquisition-history.yml の保存に失敗しました: " + e.getMessage()); }
     }
 
     public boolean clueExists(String id) {
